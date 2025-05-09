@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('warna');
             $table->foreignId('barn_id')->constrained('barns')->onDelete('cascade');
             $table->string('foto')->nullable();
+            $table->enum('status', ['Ternak', 'Terjual', 'Mati'])->default('Ternak');
             $table->text('keterangan')->nullable();
             $table->timestamps();
         });

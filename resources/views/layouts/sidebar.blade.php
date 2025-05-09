@@ -29,29 +29,45 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('jenis.index') }}" class="nav-link {{ request()->routeIs('jenis.*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-list"></i>
-                        <p>Jenis Kambing</p>
+                    <a href="{{ route('kambing.index') }}" class="nav-link {{ request()->routeIs('kambing.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-paw"></i>
+                        <p>Kambing</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('kambing.index') }}" class="nav-link {{ request()->routeIs('kambing.*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-paw"></i>
-                        <p>Data Kambing</p>
+                    <a href="{{ route('sales.index') }}" class="nav-link {{ request()->routeIs('sales.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-shopping-cart"></i>
+                        <p>Penjualan</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('barn.index') }}" class="nav-link {{ request()->routeIs('barn.*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-warehouse"></i>
+                        <i class="nav-icon fas fa-home"></i>
                         <p>Kandang</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('health_record.index') }}" class="nav-link {{ request()->routeIs('health_record.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-heartbeat"></i>
-                        <p>
-                            Kesehatan Kambing
-                        </p>
+                        <p>Kesehatan</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('feeds.index') }}" class="nav-link {{ request()->routeIs('feeds.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-utensils"></i>
+                        <p>Pakan</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('equipments.index') }}" class="nav-link {{ request()->routeIs('equipments.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-tools"></i>
+                        <p>Alat & Perlengkapan</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('jenis.index') }}" class="nav-link {{ request()->routeIs('jenis.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-list"></i>
+                        <p>Jenis Kambing</p>
                     </a>
                 </li>
                 <li class="nav-item">

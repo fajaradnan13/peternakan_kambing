@@ -12,8 +12,14 @@ class Jenis extends Model
     protected $table = 'jenis';
     protected $fillable = ['jenis_kambing'];
 
-    public function goats()
+    public function kambings()
     {
-        return $this->hasMany(Goat::class);
+        return $this->hasMany(Kambing::class);
+    }
+
+    // Accessor untuk mendapatkan nama jenis
+    public function getNamaJenisAttribute()
+    {
+        return $this->jenis_kambing;
     }
 } 

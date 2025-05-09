@@ -31,6 +31,10 @@ class BarnController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'location' => 'nullable|string',
+            'kapasitas' => 'required|integer|min:0',
+            'status' => 'required|in:tersedia,penuh',
+            'kondisi' => 'required|in:baik,perlu perbaikan,rusak',
+            'catatan' => 'nullable|string',
         ]);
         Barn::create($request->all());
         return response()->json(['success' => 'Data kandang berhasil ditambahkan']);
@@ -53,6 +57,10 @@ class BarnController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'location' => 'nullable|string',
+            'kapasitas' => 'required|integer|min:0',
+            'status' => 'required|in:tersedia,penuh',
+            'kondisi' => 'required|in:baik,perlu perbaikan,rusak',
+            'catatan' => 'nullable|string',
         ]);
         $barn = Barn::findOrFail($id);
         $barn->update($request->all());

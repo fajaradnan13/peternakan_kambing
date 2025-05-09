@@ -23,6 +23,7 @@ class HealthRecord extends Model
 
     protected $casts = [
         'checkup_date' => 'date',
+        'kehamilan' => 'boolean'
     ];
 
     public function kambing()

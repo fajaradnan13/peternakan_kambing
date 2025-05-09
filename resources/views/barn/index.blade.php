@@ -97,6 +97,10 @@
                         <th>No</th>
                         <th>Nama Kandang</th>
                         <th>Lokasi</th>
+                        <th>Kapasitas</th>
+                        <th>Status</th>
+                        <th>Kondisi</th>
+                        <th>Catatan</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -124,6 +128,29 @@
                     <div class="form-group">
                         <label for="location">Lokasi</label>
                         <textarea class="form-control" id="location" name="location" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="kapasitas">Kapasitas</label>
+                        <input type="number" class="form-control" id="kapasitas" name="kapasitas" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select class="form-control" id="status" name="status" required>
+                            <option value="tersedia">Tersedia</option>
+                            <option value="penuh">Penuh</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="kondisi">Kondisi</label>
+                        <select class="form-control" id="kondisi" name="kondisi" required>
+                            <option value="baik">Baik</option>
+                            <option value="perlu perbaikan">Perlu Perbaikan</option>
+                            <option value="rusak">Rusak</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="catatan">Catatan</label>
+                        <textarea class="form-control" id="catatan" name="catatan" rows="2"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -156,6 +183,29 @@
                         <label for="edit_location">Lokasi</label>
                         <textarea class="form-control" id="edit_location" name="location" rows="2"></textarea>
                     </div>
+                    <div class="form-group">
+                        <label for="edit_kapasitas">Kapasitas</label>
+                        <input type="number" class="form-control" id="edit_kapasitas" name="kapasitas" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_status">Status</label>
+                        <select class="form-control" id="edit_status" name="status" required>
+                            <option value="tersedia">Tersedia</option>
+                            <option value="penuh">Penuh</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_kondisi">Kondisi</label>
+                        <select class="form-control" id="edit_kondisi" name="kondisi" required>
+                            <option value="baik">Baik</option>
+                            <option value="perlu perbaikan">Perlu Perbaikan</option>
+                            <option value="rusak">Rusak</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_catatan">Catatan</label>
+                        <textarea class="form-control" id="edit_catatan" name="catatan" rows="2"></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
@@ -185,6 +235,22 @@
                     <tr>
                         <th>Lokasi</th>
                         <td id="show_location"></td>
+                    </tr>
+                    <tr>
+                        <th>Kapasitas</th>
+                        <td id="show_kapasitas"></td>
+                    </tr>
+                    <tr>
+                        <th>Status</th>
+                        <td id="show_status"></td>
+                    </tr>
+                    <tr>
+                        <th>Kondisi</th>
+                        <td id="show_kondisi"></td>
+                    </tr>
+                    <tr>
+                        <th>Catatan</th>
+                        <td id="show_catatan"></td>
                     </tr>
                 </table>
             </div>
@@ -220,8 +286,23 @@ $(document).ready(function() {
                 },
                 width: '5%'
             },
-            {data: 'name', name: 'name', width: '45%'},
-            {data: 'location', name: 'location', width: '40%'},
+            {data: 'name', name: 'name', width: '15%'},
+            {data: 'location', name: 'location', width: '15%'},
+            {data: 'kapasitas', name: 'kapasitas', width: '10%'},
+            {data: 'status', name: 'status', width: '10%'},
+            {data: 'kondisi', name: 'kondisi', width: '15%'},
+            {
+                data: 'catatan',
+                name: 'catatan',
+                width: '20%',
+                render: function(data, type, row) {
+                    if (data && data.includes('/')) {
+                        var parts = data.split('/');
+                        return `<span class='badge badge-primary'>Kapasitas: ${parts[0]}</span> <span class='badge badge-success'>Tersedia: ${parts[1]}</span>`;
+                    }
+                    return data ? `<span class='badge badge-secondary'>${data}</span>` : '-';
+                }
+            },
             {data: 'action', name: 'action', orderable: false, searchable: false, width: '10%'}
         ],
         order: [[1, 'asc']],
@@ -276,6 +357,10 @@ $(document).ready(function() {
         $.get("{{ url('barn') }}/" + id, function(data) {
             $('#show_name').text(data.name);
             $('#show_location').text(data.location);
+            $('#show_kapasitas').text(data.kapasitas);
+            $('#show_status').text(data.status);
+            $('#show_kondisi').text(data.kondisi);
+            $('#show_catatan').text(data.catatan);
         });
     });
 
@@ -286,6 +371,10 @@ $(document).ready(function() {
             $('#edit_id').val(data.id);
             $('#edit_name').val(data.name);
             $('#edit_location').val(data.location);
+            $('#edit_kapasitas').val(data.kapasitas);
+            $('#edit_status').val(data.status);
+            $('#edit_kondisi').val(data.kondisi);
+            $('#edit_catatan').val(data.catatan);
         });
     });
 

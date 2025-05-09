@@ -4,259 +4,334 @@
 
 @section('content')
 <div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <a href="{{ route('sales.export.pdf') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
+        </a>
+    </div>
+
+    <!-- Content Row -->
     <div class="row">
-        <!-- Total Kambing -->
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-                <div class="inner">
-                    <h3>{{ $totalKambing }}</h3>
-                    <p>Total Kambing</p>
+        <!-- Total Kambing Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Kambing</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $totalKambing }}</div>
+                            <div class="text-xs text-gray-600 mt-2">
+                                Jantan: {{ $kambingJantan }} | Betina: {{ $kambingBetina }}<br>
+                                Aktif: {{ $kambingAktif }} | Terjual: {{ $kambingTerjual }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-sheep fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="icon">
-                    <i class="fas fa-sheep"></i>
-                </div>
-                <a href="{{ route('kambing.index') }}" class="small-box-footer">
-                    Lihat Detail <i class="fas fa-arrow-circle-right"></i>
-                </a>
             </div>
         </div>
 
-        <!-- Kambing Sehat -->
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-success">
-                <div class="inner">
-                    <h3>{{ $kambingSehat }}</h3>
-                    <p>Kambing Sehat</p>
+        <!-- Total Penjualan Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Penjualan</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Rp {{ number_format($totalPenjualan, 0, ',', '.') }}</div>
+                            <div class="text-xs text-gray-600 mt-2">
+                                Bulan Ini: Rp {{ number_format($penjualanBulanIni, 0, ',', '.') }}<br>
+                                Jumlah Transaksi: {{ $jumlahPenjualan }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="icon">
-                    <i class="fas fa-heart"></i>
-                </div>
-                <a href="{{ route('kambing.index') }}" class="small-box-footer">
-                    Lihat Detail <i class="fas fa-arrow-circle-right"></i>
-                </a>
             </div>
         </div>
 
-        <!-- Kambing Sakit -->
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-danger">
-                <div class="inner">
-                    <h3>{{ $kambingSakit }}</h3>
-                    <p>Kambing Sakit</p>
+        <!-- Stok Pakan Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Stok Pakan</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $totalPakan }} kg</div>
+                            <div class="text-xs text-gray-600 mt-2">
+                                Hampir Habis: {{ $pakanHampirHabis }} item
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-wheat fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <a href="{{ route('kambing.index') }}" class="small-box-footer">
-                    Lihat Detail <i class="fas fa-arrow-circle-right"></i>
-                </a>
             </div>
         </div>
 
-        <!-- Kambing Hamil -->
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-warning">
-                <div class="inner">
-                    <h3>{{ $kambingHamil }}</h3>
-                    <p>Kambing Hamil</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-baby"></i>
-                </div>
-                <a href="{{ route('kambing.index') }}" class="small-box-footer">
-                    Lihat Detail <i class="fas fa-arrow-circle-right"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Grafik Pertumbuhan Kambing</h3>
-                <div class="card-tools">
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                    <button type="button" class="btn btn-tool" data-card-widget="remove">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="card-body">
-                <canvas id="growthChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Aktivitas Terbaru</h3>
-                <div class="card-tools">
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                    <button type="button" class="btn btn-tool" data-card-widget="remove">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="timeline">
-                    <div>
-                        <i class="fas fa-user bg-primary"></i>
-                        <div class="timeline-item">
-                            <span class="time"><i class="fas fa-clock"></i> 5 mins ago</span>
-                            <h3 class="timeline-header">Pemberian Vaksin</h3>
-                            <div class="timeline-body">
-                                Vaksinasi kambing dilakukan untuk 10 ekor kambing
+        <!-- Kandang Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <a href="{{ route('barn.index') }}" class="text-decoration-none">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Kandang</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $totalKandang }} Kandang</div>
+                                <div class="text-xs text-gray-600 mt-2">
+                                    @forelse($barnsInfo->take(2) as $barn)
+                                        @if($barn->catatan && strpos($barn->catatan, '/') !== false)
+                                            @php 
+                                                list($kap, $tersedia) = explode('/', $barn->catatan);
+                                                $isFull = $tersedia == 0;
+                                            @endphp
+                                            <div class="mb-1">
+                                                Kandang {{ $barn->name }}: 
+                                                <span class="badge badge-{{ $isFull ? 'danger' : 'success' }}">
+                                                    {{ $kap }}/{{ $tersedia }}
+                                                </span>
+                                            </div>
+                                        @endif
+                                    @empty
+                                        <div>Belum ada data kandang</div>
+                                    @endforelse
+                                    <div class="mt-1"><i class="fas fa-arrow-right"></i> Lihat Semua</div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-home fa-2x text-gray-300"></i>
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <i class="fas fa-clock bg-gray"></i>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Ringkasan Laba/Rugi -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Laba/Rugi</h6>
+                    <form method="get" action="" class="form-inline">
+                        <label for="periode" class="mr-2 mb-0">Periode:</label>
+                        <select name="periode" id="periode" class="form-control form-control-sm mr-2" onchange="this.form.submit()">
+                            <option value="minggu" {{ $periode == 'minggu' ? 'selected' : '' }}>1 Minggu</option>
+                            <option value="bulan" {{ $periode == 'bulan' ? 'selected' : '' }}>1 Bulan</option>
+                            <option value="tahun" {{ $periode == 'tahun' ? 'selected' : '' }}>1 Tahun</option>
+                            <option value="all" {{ $periode == 'all' ? 'selected' : '' }}>Semua Data</option>
+                        </select>
+                    </form>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="p-3 rounded border bg-light mb-2">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-calendar-alt fa-lg text-primary mr-2"></i>
+                                    <span class="font-weight-bold">Periode:</span>
+                                    <span class="ml-2">{{ $labelPeriode }}</span>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-6 col-md-6 mb-1">
+                                        <i class="fas fa-money-bill-wave text-success mr-1"></i>
+                                        Penjualan:
+                                        <span class="font-weight-bold text-success">Rp {{ number_format($penjualan, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="col-6 col-md-6 mb-1">
+                                        <i class="fas fa-shopping-cart text-danger mr-1"></i>
+                                        Pembelian Kambing:
+                                        <span class="font-weight-bold text-danger">Rp {{ number_format($pembelianKambing, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="col-6 col-md-6 mb-1">
+                                        <i class="fas fa-leaf text-warning mr-1"></i>
+                                        Pembelian Pakan:
+                                        <span class="font-weight-bold text-warning">Rp {{ number_format($pembelianPakan, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="col-6 col-md-6 mb-1">
+                                        <i class="fas fa-tools text-info mr-1"></i>
+                                        Pembelian Alat:
+                                        <span class="font-weight-bold text-info">Rp {{ number_format($pembelianAlat, 0, ',', '.') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-4 rounded text-center shadow-sm {{ $labaRugi < 0 ? 'bg-danger text-white' : 'bg-success text-white' }}">
+                                <div class="mb-2">
+                                    <i class="fas fa-coins fa-2x"></i>
+                                </div>
+                                <div class="h3 font-weight-bold mb-0">Rp {{ number_format($labaRugi, 0, ',', '.') }}</div>
+                                <div style="font-size:1rem;font-weight:normal;">Laba/Rugi</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pie Chart -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Distribusi Kambing per Jenis</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4">
+                        <canvas id="jenisKambingChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Kambing Terbaru -->
+        <div class="col-xl-4 col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Kambing Terbaru</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Nama</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($kambingTerbaru as $kambing)
+                                <tr>
+                                    <td>{{ $kambing->kode_kambing }}</td>
+                                    <td>{{ $kambing->nama_kambing }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ $kambing->status == 'Aktif' ? 'success' : 'warning' }}">
+                                            {{ $kambing->status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Penjualan Terbaru -->
+        <div class="col-xl-4 col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Penjualan Terbaru</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Kambing</th>
+                                    <th>Harga</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($penjualanTerbaru as $penjualan)
+                                <tr>
+                                    <td>{{ $penjualan->tgl_penjualan->format('d/m/Y') }}</td>
+                                    <td>{{ $penjualan->kambing->nama_kambing }}</td>
+                                    <td>Rp {{ number_format($penjualan->harga_jual, 0, ',', '.') }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rekam Medis Terbaru -->
+        <div class="col-xl-4 col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Rekam Medis Terbaru</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Kambing</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($rekamMedisTerbaru as $rm)
+                                <tr>
+                                    <td>{{ $rm->checkup_date ? $rm->checkup_date->format('d/m/Y') : '-' }}</td>
+                                    <td>{{ $rm->kambing->nama_kambing }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ $rm->kondisi_kesehatan == 'Sehat' ? 'success' : 'danger' }}">
+                                            {{ $rm->kondisi_kesehatan }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Daftar Kambing Terbaru</h3>
-                <div class="card-tools">
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                    <button type="button" class="btn btn-tool" data-card-widget="remove">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="card-body">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th style="width: 10px">#</th>
-                            <th>Nama Kambing</th>
-                            <th>Jenis</th>
-                            <th>Umur</th>
-                            <th>Status</th>
-                            <th style="width: 40px">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1.</td>
-                            <td>Kambing A</td>
-                            <td>Ettawa</td>
-                            <td>2 Tahun</td>
-                            <td><span class="badge bg-success">Sehat</span></td>
-                            <td>
-                                <a href="#" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2.</td>
-                            <td>Kambing B</td>
-                            <td>Jawa</td>
-                            <td>1 Tahun</td>
-                            <td><span class="badge bg-warning">Sakit</span></td>
-                            <td>
-                                <a href="#" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-@push('js')
-<script>
-    $(function () {
-        // Growth Chart
-        var growthChart = new Chart(document.getElementById('growthChart'), {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Berat Rata-rata (kg)',
-                    data: [12, 19, 3, 5, 2, 3],
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-    });
-</script>
-@endpush
 @endsection
 
-@push('css')
-<style>
-    .small-box {
-        border-radius: 0.25rem;
-        box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
-        display: block;
-        margin-bottom: 20px;
-        position: relative;
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Grafik Jenis Kambing
+var ctxPie = document.getElementById('jenisKambingChart').getContext('2d');
+var jenisData = @json($kambingPerJenis);
+var labelsPie = jenisData.map(item => item.nama_jenis);
+var dataPie = jenisData.map(item => item.kambings_count);
+
+new Chart(ctxPie, {
+    type: 'doughnut',
+    data: {
+        labels: labelsPie,
+        datasets: [{
+            data: dataPie,
+            backgroundColor: [
+                'rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 205, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(153, 102, 255)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
     }
-    .small-box > .inner {
-        padding: 10px;
-    }
-    .small-box h3 {
-        font-size: 2.2rem;
-        font-weight: 700;
-        margin: 0 0 10px 0;
-        white-space: nowrap;
-        padding: 0;
-    }
-    .small-box p {
-        font-size: 1rem;
-    }
-    .small-box .icon {
-        color: rgba(0,0,0,.15);
-        z-index: 0;
-    }
-    .small-box > .small-box-footer {
-        background: rgba(0,0,0,.1);
-        color: rgba(255,255,255,.8);
-        display: block;
-        padding: 3px 0;
-        position: relative;
-        text-align: center;
-        text-decoration: none;
-        z-index: 10;
-    }
-    .small-box > .small-box-footer:hover {
-        background: rgba(0,0,0,.15);
-        color: #fff;
-    }
-    .bg-info {
-        background-color: #17a2b8 !important;
-    }
-    .bg-success {
-        background-color: #28a745 !important;
-    }
-    .bg-danger {
-        background-color: #dc3545 !important;
-    }
-    .bg-warning {
-        background-color: #ffc107 !important;
-    }
-    .inner {
-        color: #fff;
-    }
-</style>
+});
+</script>
 @endpush

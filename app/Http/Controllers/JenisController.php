@@ -105,7 +105,23 @@ class JenisController extends Controller
 
     public function getData()
     {
-        $jenis = Jenis::select('id', 'jenis_kambing as nama_jenis')->get();
-        return response()->json($jenis);
+        try {
+            \Log::info('Mengambil data jenis kambing');
+            $jenis = Jenis::select('id', 'jenis_kambing')->get();
+            \Log::info('Data jenis yang ditemukan:', $jenis->toArray());
+            
+            // Transform data untuk memastikan format yang benar
+            $jenis = $jenis->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'nama_jenis' => $item->jenis_kambing
+                ];
+            });
+            
+            return response()->json($jenis);
+        } catch (\Exception $e) {
+            \Log::error('Error in JenisController@getData: ' . $e->getMessage());
+            return response()->json(['error' => 'Gagal mengambil data jenis kambing: ' . $e->getMessage()], 500);
+        }
     }
 } 

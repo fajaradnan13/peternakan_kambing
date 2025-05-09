@@ -90,6 +90,19 @@
             text-align: center;
             padding: 20px 0;
         }
+        .badge {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: white;
+        }
+        .badge-success {
+            background-color: #28a745;
+        }
+        .badge-warning {
+            background-color: #ffc107;
+            color: #000;
+        }
     </style>
 </head>
 <body>
@@ -147,6 +160,16 @@
                 <tr>
                     <th>Kandang</th>
                     <td>{{ $kambing->barn ? $kambing->barn->name : '-' }}</td>
+                </tr>
+                <tr>
+                    <th>Status</th>
+                    <td>
+                        @if($kambing->status === 'Ternak')
+                            <span class="badge badge-success">Ternak</span>
+                        @else
+                            <span class="badge badge-warning">Terjual</span>
+                        @endif
+                    </td>
                 </tr>
                 <tr>
                     <th>Keterangan</th>

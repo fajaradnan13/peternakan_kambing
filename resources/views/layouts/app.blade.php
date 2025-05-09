@@ -76,6 +76,40 @@
 
     <!-- jQuery -->
     <script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>
+    <script>
+        // Setup AJAX
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        // Global AJAX Error Handler
+        $(document).ajaxError(function(event, jqXHR, settings, thrownError) {
+            console.error('Ajax Error:', {
+                status: jqXHR.status,
+                statusText: jqXHR.statusText,
+                responseText: jqXHR.responseText,
+                error: thrownError
+            });
+
+            let errorMessage = 'Terjadi kesalahan pada server';
+            
+            if (jqXHR.status === 404) {
+                errorMessage = 'Data tidak ditemukan';
+            } else if (jqXHR.status === 422) {
+                errorMessage = 'Data yang dimasukkan tidak valid';
+            } else if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                errorMessage = jqXHR.responseJSON.message;
+            }
+
+            if (typeof toastr !== 'undefined') {
+                toastr.error(errorMessage);
+            } else {
+                alert(errorMessage);
+            }
+        });
+    </script>
     <!-- jQuery UI 1.11.4 -->
     <script src="{{ asset('assets/plugins/jquery-ui/jquery-ui.min.js') }}"></script>
     <!-- Bootstrap 4 -->

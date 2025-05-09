@@ -12,6 +12,10 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('location')->nullable();
+            $table->integer('kapasitas')->default(0);
+            $table->enum('status', ['tersedia', 'penuh'])->default('tersedia');
+            $table->enum('kondisi', ['baik', 'perlu perbaikan', 'rusak'])->default('baik');
+            $table->text('catatan')->nullable();
             $table->timestamps();
         });
     }

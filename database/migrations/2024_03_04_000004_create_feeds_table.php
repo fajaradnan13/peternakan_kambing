@@ -10,9 +10,11 @@ return new class extends Migration
     {
         Schema::create('feeds', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->integer('stock_quantity');
-            $table->string('unit');
+            $table->string('nama');
+            $table->date('tgl_beli');
+            $table->string('satuan');
+            $table->decimal('harga', 10, 2);
+            $table->integer('jumlah_beli');
             $table->timestamps();
         });
     }

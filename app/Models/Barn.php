@@ -10,6 +10,10 @@ class Barn extends Model
     protected $fillable = [
         'name',
         'location',
+        'kapasitas',
+        'status',
+        'kondisi',
+        'catatan',
     ];
 
     public function kambings()

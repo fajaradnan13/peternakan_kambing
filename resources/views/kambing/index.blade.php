@@ -147,6 +147,7 @@
                                     <th>Harga Beli</th>
                                     <th>Warna</th>
                                     <th>Kandang</th>
+                                    <th>Status</th>
                                     <th>Foto</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -183,9 +184,6 @@
                         <label for="jenis_id">Jenis Kambing</label>
                         <select class="form-control" id="jenis_id" name="jenis_id" required>
                             <option value="">Pilih Jenis</option>
-                            @foreach($jenis as $j)
-                                <option value="{{ $j->id }}">{{ $j->nama_jenis }}</option>
-                            @endforeach
                         </select>
                     </div>
                     <div class="form-group">
@@ -370,6 +368,10 @@
                                 <td id="show_kandang"></td>
                             </tr>
                             <tr>
+                                <th>Status</th>
+                                <td id="show_status"></td>
+                            </tr>
+                            <tr>
                                 <th>Keterangan</th>
                                 <td id="show_keterangan"></td>
                             </tr>
@@ -384,7 +386,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5>Riwayat Kesehatan</h5>
                             <button type="button" class="btn btn-primary btn-sm" id="addHealthRecordBtn">
-                                <i class="fas fa-plus"></i> Add Catatan Kesehatan
+                                <i class="fas fa-plus"></i> Tambah Catatan Kesehatan
                             </button>
                         </div>
                         <div class="table-responsive">
@@ -540,6 +542,7 @@
 @endsection
 
 @push('js')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 <script>
 function formatNumber(value) {
     // Konversi ke integer untuk menghilangkan desimal
@@ -586,16 +589,26 @@ function hitungUmurSaatIni(tanggalBeli, umurBulan) {
 }
 
 $(document).ready(function() {
+    // Setup CSRF token untuk semua request AJAX
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
 
+    // Inisialisasi DataTable
     var table = $('#kambing-table').DataTable({
         processing: true,
         serverSide: false,
-        ajax: "{{ route('kambing.index') }}",
+        ajax: {
+            url: "{{ route('kambing.index') }}",
+            type: "GET",
+            error: function(xhr, error, thrown) {
+                console.error('DataTables error:', error);
+                console.error('Server response:', xhr.responseText);
+                toastr.error('Terjadi kesalahan saat mengambil data');
+            }
+        },
         columns: [
             {data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false, width: '5%'},
             {data: 'kode_kambing', name: 'kode_kambing', width: '10%'},
@@ -604,11 +617,16 @@ $(document).ready(function() {
             {data: 'jenis_kelamin', name: 'jenis_kelamin', width: '10%'},
             {data: 'tanggal_beli', name: 'tanggal_beli', width: '10%'},
             {data: 'umur', name: 'umur', width: '10%'},
-            {data: 'harga_beli', name: 'harga_beli', width: '15%', render: function(data) {
-                return formatNumber(data);
-            }},
+            {data: 'harga_beli', name: 'harga_beli', width: '15%'},
             {data: 'warna', name: 'warna', width: '10%'},
             {data: 'kandang', name: 'kandang', width: '10%'},
+            {data: 'status', name: 'status', width: '10%', render: function(data) {
+                return data === 'Ternak' 
+                    ? '<span class="badge badge-success">Ternak</span>'
+                    : data === 'Terjual'
+                    ? '<span class="badge badge-warning">Terjual</span>'
+                    : '<span class="badge badge-danger">Mati</span>';
+            }},
             {data: 'foto', name: 'foto', orderable: false, searchable: false, width: '10%'},
             {data: 'action', name: 'action', orderable: false, searchable: false, width: '5%'}
         ],
@@ -616,7 +634,19 @@ $(document).ready(function() {
         pageLength: 10,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]],
         language: {
-            url: "//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json"
+            processing: "Memproses...",
+            lengthMenu: "Tampilkan _MENU_ data per halaman",
+            zeroRecords: "Tidak ada data yang ditemukan",
+            info: "Menampilkan halaman _PAGE_ dari _PAGES_",
+            infoEmpty: "Tidak ada data yang tersedia",
+            infoFiltered: "(difilter dari _MAX_ total data)",
+            search: "Cari:",
+            paginate: {
+                first: "Pertama",
+                last: "Terakhir",
+                next: "Selanjutnya",
+                previous: "Sebelumnya"
+            }
         },
         responsive: true,
         autoWidth: false,
@@ -630,17 +660,58 @@ $(document).ready(function() {
         }
     });
 
-    // Reset form saat modal ditutup
-    $('#addKambingModal').on('hidden.bs.modal', function () {
+    // Event handler untuk modal tambah
+    $('#addKambingModal').on('show.bs.modal', function() {
+        // Reset form
         $('#addForm')[0].reset();
+        
+        // Get next kode kambing
+        $.ajax({
+            url: "{{ route('kambing.getNextKode') }}",
+            type: "GET",
+            success: function(data) {
+                $('#kode_kambing').val(data.kode_kambing);
+            },
+            error: function(xhr) {
+                console.error('Error getting next kode:', xhr);
+                toastr.error('Gagal mendapatkan kode kambing');
+            }
+        });
+
+        // Load jenis data
+        $.ajax({
+            url: "{{ route('jenis.getData') }}",
+            type: "GET",
+            success: function(data) {
+                console.log('Data jenis yang diterima:', data);
+                if (data && data.length > 0) {
+                    var jenisOptions = '<option value="">Pilih Jenis</option>';
+                    data.forEach(function(jenis) {
+                        if (jenis.nama_jenis) {  // Tambahkan pengecekan
+                            jenisOptions += '<option value="' + jenis.id + '">' + jenis.nama_jenis + '</option>';
+                        }
+                    });
+                    $('#jenis_id').html(jenisOptions);
+                } else {
+                    console.error('Data jenis kosong');
+                    toastr.warning('Tidak ada data jenis kambing yang tersedia');
+                    $('#jenis_id').html('<option value="">Tidak ada data jenis</option>');
+                }
+            },
+            error: function(xhr) {
+                console.error('Error loading jenis data:', xhr);
+                toastr.error('Gagal memuat data jenis kambing');
+                $('#jenis_id').html('<option value="">Error memuat data</option>');
+            }
+        });
     });
 
-    // Tambah Data
+    // Event handler untuk submit form tambah
     $('#addForm').submit(function(e) {
         e.preventDefault();
         var formData = new FormData(this);
-        // Unformat harga beli sebelum dikirim
         formData.set('harga_beli', unformatRupiah($('#harga_beli').val()));
+
         $.ajax({
             url: "{{ route('kambing.store') }}",
             type: "POST",
@@ -665,51 +736,216 @@ $(document).ready(function() {
         });
     });
 
+    // Event handler untuk modal edit
+    $(document).on('click', '.edit-kambing', function() {
+        var id = $(this).data('id');
+        $.ajax({
+            url: "{{ url('kambing') }}/" + id + "/edit",
+            type: "GET",
+            success: function(data) {
+                console.log('Data edit yang diterima:', data);
+                if (data && data.kambing) {
+                    $('#edit_id').val(data.kambing.id);
+                    $('#edit_kode_kambing').val(data.kambing.kode_kambing);
+                    $('#edit_nama_kambing').val(data.kambing.nama_kambing);
+                    $('#edit_jenis_id').val(data.kambing.jenis_id);
+                    $('#edit_jenis_kelamin').val(data.kambing.jenis_kelamin);
+                    $('#edit_tanggal_beli').val(data.kambing.tanggal_beli);
+                    $('#edit_umur').val(data.kambing.umur);
+                    $('#edit_harga_beli').val(formatNumber(data.kambing.harga_beli));
+                    $('#edit_warna').val(data.kambing.warna);
+                    $('#edit_keterangan').val(data.kambing.keterangan);
+                    
+                    // Update dropdown jenis
+                    if (data.jenis && data.jenis.length > 0) {
+                        var jenisOptions = '<option value="">Pilih Jenis</option>';
+                        data.jenis.forEach(function(jenis) {
+                            var selected = (jenis.id == data.kambing.jenis_id) ? 'selected' : '';
+                            jenisOptions += '<option value="' + jenis.id + '" ' + selected + '>' + jenis.nama_jenis + '</option>';
+                        });
+                        $('#edit_jenis_id').html(jenisOptions);
+                    } else {
+                        console.error('Data jenis kosong');
+                        $('#edit_jenis_id').html('<option value="">Tidak ada data jenis</option>');
+                    }
+                    
+                    // Update dropdown kandang
+                    if (data.barns && data.barns.length > 0) {
+                        var barnOptions = '<option value="">Pilih Kandang</option>';
+                        data.barns.forEach(function(barn) {
+                            var selected = (barn.id == data.kambing.barn_id) ? 'selected' : '';
+                            barnOptions += '<option value="' + barn.id + '" ' + selected + '>' + barn.name + '</option>';
+                        });
+                        $('#edit_barn_id').html(barnOptions);
+                    } else {
+                        console.error('Data kandang kosong');
+                        $('#edit_barn_id').html('<option value="">Tidak ada data kandang</option>');
+                    }
+                    
+                    if (data.kambing.foto) {
+                        $('#current_foto').html('<img src="' + data.kambing.foto + '" alt="Foto Kambing" style="max-width: 200px;">');
+                    } else {
+                        $('#current_foto').html('<p>Tidak ada foto</p>');
+                    }
+                } else {
+                    console.error('Data kambing tidak valid');
+                    toastr.error('Data kambing tidak valid');
+                }
+            },
+            error: function(xhr) {
+                console.error('Error loading edit data:', xhr);
+                toastr.error('Gagal memuat data kambing');
+            }
+        });
+    });
+
+    // Event handler untuk submit form edit
+    $('#editForm').submit(function(e) {
+        e.preventDefault();
+        var id = $('#edit_id').val();
+        var formData = new FormData(this);
+        formData.append('_method', 'PUT');
+        formData.set('harga_beli', unformatRupiah($('#edit_harga_beli').val()));
+
+        $.ajax({
+            url: "{{ url('kambing') }}/" + id,
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                $('#editModal').modal('hide');
+                table.ajax.reload();
+                toastr.success(response.success);
+            },
+            error: function(xhr) {
+                if (xhr.status === 422) {
+                    var errors = xhr.responseJSON.errors;
+                    $.each(errors, function(key, value) {
+                        toastr.error(value[0]);
+                    });
+                } else {
+                    toastr.error('Terjadi kesalahan saat memperbarui data');
+                }
+            }
+        });
+    });
+
+    // Event handler untuk hapus data
+    $(document).on('click', '.delete-kambing', function() {
+        var id = $(this).data('id');
+        if(confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+            $.ajax({
+                url: "{{ url('kambing') }}/" + id,
+                type: "DELETE",
+                success: function(response) {
+                    table.ajax.reload();
+                    toastr.success(response.success);
+                },
+                error: function(xhr) {
+                    toastr.error('Terjadi kesalahan saat menghapus data');
+                }
+            });
+        }
+    });
+
+    // Event handler untuk reset form saat modal ditutup
+    $('#addKambingModal, #editModal').on('hidden.bs.modal', function () {
+        $(this).find('form')[0].reset();
+        if ($(this).attr('id') === 'addKambingModal') {
+            $('#kode_kambing').val('');
+        }
+    });
+
     // Show Data
     $(document).on('click', '.show-kambing', function() {
         var id = $(this).data('id');
-        $.get("{{ url('kambing') }}/" + id, function(data) {
-            $('#show_kode_kambing').text(data.kambing.kode_kambing);
-            $('#show_nama_kambing').text(data.kambing.nama_kambing);
-            $('#show_jenis').text(data.jenis);
-            $('#show_jenis_kelamin').text(data.kambing.jenis_kelamin);
-            $('#show_tanggal_beli').text(data.kambing.tanggal_beli);
-            $('#show_umur').text(data.kambing.umur + ' bulan');
-            $('#show_umur_saat_ini').text(hitungUmurSaatIni(data.kambing.tanggal_beli, data.kambing.umur));
-            $('#show_harga_beli').text(formatNumber(data.kambing.harga_beli));
-            $('#show_warna').text(data.kambing.warna);
-            $('#show_kandang').text(data.kambing.barn_id && data.kambing.barn_id !== null ? (data.kambing.barn ? data.kambing.barn.name : '-') : '-');
-            $('#show_keterangan').text(data.kambing.keterangan || '-');
-            
-            // Update link export PDF
-            $('#exportPdfBtn').attr('href', "{{ url('kambing') }}/" + id + "/export-pdf");
-            
-            if (data.kambing.foto) {
-                $('#show_foto').html('<img src="' + data.kambing.foto + '" alt="Foto Kambing" class="img-fluid" style="max-height: 300px;">');
-            } else {
-                $('#show_foto').html('<p>Tidak ada foto</p>');
-            }
+        console.log('Mengambil data kambing dengan ID:', id);
+        
+        $.ajax({
+            url: "{{ url('kambing') }}/" + id,
+            type: "GET",
+            dataType: "json",
+            beforeSend: function() {
+                console.log('Memulai request ke:', "{{ url('kambing') }}/" + id);
+            },
+            success: function(data) {
+                console.log('Data yang diterima:', data);
+                try {
+                    if (!data.kambing) {
+                        throw new Error('Data kambing tidak ditemukan');
+                    }
 
-            // Tampilkan data kesehatan
-            var healthRecordsHtml = '';
-            if (data.health_records && data.health_records.length > 0) {
-                data.health_records.forEach(function(record) {
-                    healthRecordsHtml += '<tr>';
-                    healthRecordsHtml += '<td>' + record.checkup_date + '</td>';
-                    healthRecordsHtml += '<td>' + record.kondisi_kesehatan + '</td>';
-                    healthRecordsHtml += '<td>' + (record.kehamilan ? 'Ya' : 'Tidak') + '</td>';
-                    healthRecordsHtml += '<td>' + record.condition + '</td>';
-                    healthRecordsHtml += '<td>' + (record.treatment || '-') + '</td>';
-                    healthRecordsHtml += '<td>' + (record.notes || '-') + '</td>';
-                    healthRecordsHtml += '</tr>';
+                    $('#show_kode_kambing').text(data.kambing.kode_kambing || '-');
+                    $('#show_nama_kambing').text(data.kambing.nama_kambing || '-');
+                    $('#show_jenis').text(data.jenis || '-');
+                    $('#show_jenis_kelamin').text(data.kambing.jenis_kelamin || '-');
+                    $('#show_tanggal_beli').text(data.kambing.tanggal_beli ? moment(data.kambing.tanggal_beli).format('DD/MM/YYYY') : '-');
+                    $('#show_umur').text(data.kambing.umur ? (data.kambing.umur + ' bulan') : '-');
+                    $('#show_umur_saat_ini').text(data.umur_saat_ini || '-');
+                    $('#show_harga_beli').text(data.kambing.harga_beli ? formatNumber(data.kambing.harga_beli) : '-');
+                    $('#show_warna').text(data.kambing.warna || '-');
+                    $('#show_kandang').text(data.barn || '-');
+                    $('#show_keterangan').text(data.kambing.keterangan || '-');
+                    $('#show_status').html(data.kambing.status === 'Ternak' ? 
+                        '<span class="badge badge-success">Ternak</span>' : 
+                        '<span class="badge badge-warning">Terjual</span>');
+                    
+                    // Update link export PDF
+                    $('#exportPdfBtn').attr('href', "{{ url('kambing') }}/" + id + "/export-pdf");
+                    
+                    if (data.kambing.foto) {
+                        $('#show_foto').html('<img src="' + data.kambing.foto + '" alt="Foto Kambing" class="img-fluid" style="max-height: 300px;">');
+                    } else {
+                        $('#show_foto').html('<p>Tidak ada foto</p>');
+                    }
+
+                    // Tampilkan data kesehatan
+                    var healthRecordsHtml = '';
+                    if (data.health_records && data.health_records.length > 0) {
+                        data.health_records.forEach(function(record) {
+                            healthRecordsHtml += '<tr>';
+                            healthRecordsHtml += '<td>' + (record.checkup_date ? moment(record.checkup_date).format('DD/MM/YYYY') : '-') + '</td>';
+                            healthRecordsHtml += '<td>' + (record.kondisi_kesehatan || '-') + '</td>';
+                            healthRecordsHtml += '<td>' + (record.kehamilan ? 'Ya' : 'Tidak') + '</td>';
+                            healthRecordsHtml += '<td>' + (record.condition || '-') + '</td>';
+                            healthRecordsHtml += '<td>' + (record.treatment || '-') + '</td>';
+                            healthRecordsHtml += '<td>' + (record.notes || '-') + '</td>';
+                            healthRecordsHtml += '</tr>';
+                        });
+                    } else {
+                        healthRecordsHtml = '<tr><td colspan="6" class="text-center">Tidak ada data kesehatan</td></tr>';
+                    }
+                    $('#health_records_body').html(healthRecordsHtml);
+
+                    // Set goat_id untuk form tambah catatan kesehatan
+                    $('#addHealthRecordBtn').data('goat-id', data.kambing.id);
+                    
+                    // Tampilkan modal
+                    $('#showModal').modal('show');
+                } catch (error) {
+                    console.error('Error saat memproses data:', error);
+                    toastr.error('Terjadi kesalahan saat memproses data: ' + error.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error Ajax:', {
+                    status: status,
+                    error: error,
+                    response: xhr.responseText
                 });
-            } else {
-                healthRecordsHtml = '<tr><td colspan="6" class="text-center">Tidak ada data kesehatan</td></tr>';
+                
+                let errorMessage = 'Terjadi kesalahan saat mengambil data';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                } else if (xhr.status === 404) {
+                    errorMessage = 'Data kambing tidak ditemukan';
+                } else if (xhr.status === 500) {
+                    errorMessage = 'Terjadi kesalahan pada server';
+                }
+                
+                toastr.error(errorMessage);
             }
-            $('#health_records_body').html(healthRecordsHtml);
-
-            // Set goat_id untuk form tambah catatan kesehatan
-            $('#addHealthRecordBtn').data('goat-id', data.kambing.id);
         });
     });
 
@@ -769,125 +1005,6 @@ $(document).ready(function() {
                     toastr.error('Terjadi kesalahan saat menyimpan data');
                 }
             }
-        });
-    });
-
-    // Reset form saat modal ditutup
-    $('#addHealthRecordModal').on('hidden.bs.modal', function () {
-        $('#addHealthRecordForm')[0].reset();
-    });
-
-    // Edit Data
-    $(document).on('click', '.edit-kambing', function() {
-        var id = $(this).data('id');
-        $.get("{{ url('kambing') }}/" + id + "/edit", function(data) {
-            $('#edit_id').val(data.kambing.id);
-            $('#edit_kode_kambing').val(data.kambing.kode_kambing);
-            $('#edit_nama_kambing').val(data.kambing.nama_kambing);
-            $('#edit_jenis_id').val(data.kambing.jenis_id);
-            $('#edit_jenis_kelamin').val(data.kambing.jenis_kelamin);
-            $('#edit_tanggal_beli').val(data.kambing.tanggal_beli);
-            $('#edit_umur').val(data.kambing.umur);
-            $('#edit_harga_beli').val(formatNumber(data.kambing.harga_beli));
-            $('#edit_warna').val(data.kambing.warna);
-            $('#edit_keterangan').val(data.kambing.keterangan);
-            
-            // Update dropdown jenis
-            var jenisOptions = '<option value="">Pilih Jenis</option>';
-            data.jenis.forEach(function(jenis) {
-                var selected = (jenis.id == data.kambing.jenis_id) ? 'selected' : '';
-                jenisOptions += '<option value="' + jenis.id + '" ' + selected + '>' + jenis.nama_jenis + '</option>';
-            });
-            $('#edit_jenis_id').html(jenisOptions);
-            
-            // Update dropdown kandang
-            var barnOptions = '<option value="">Pilih Kandang</option>';
-            data.barns.forEach(function(barn) {
-                var selected = (barn.id == data.kambing.barn_id) ? 'selected' : '';
-                barnOptions += '<option value="' + barn.id + '" ' + selected + '>' + barn.name + '</option>';
-            });
-            $('#edit_barn_id').html(barnOptions);
-            
-            if (data.kambing.foto) {
-                $('#current_foto').html('<img src="' + data.kambing.foto + '" alt="Foto Kambing" style="max-width: 200px;">');
-            } else {
-                $('#current_foto').html('<p>Tidak ada foto</p>');
-            }
-        });
-    });
-
-    $('#editForm').submit(function(e) {
-        e.preventDefault();
-        var id = $('#edit_id').val();
-        var formData = new FormData(this);
-        formData.append('_method', 'PUT');
-        // Unformat harga beli sebelum dikirim
-        formData.set('harga_beli', unformatRupiah($('#edit_harga_beli').val()));
-
-        $.ajax({
-            url: "{{ url('kambing') }}/" + id,
-            type: "POST",
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                $('#editModal').modal('hide');
-                table.ajax.reload();
-                toastr.success(response.success);
-            },
-            error: function(xhr) {
-                if (xhr.status === 422) {
-                    var errors = xhr.responseJSON.errors;
-                    $.each(errors, function(key, value) {
-                        toastr.error(value[0]);
-                    });
-                } else {
-                    var errorMessage = xhr.responseJSON.error || 'Terjadi kesalahan saat memperbarui data';
-                    toastr.error(errorMessage);
-                }
-            }
-        });
-    });
-
-    // Hapus Data
-    $(document).on('click', '.delete-kambing', function() {
-        if(confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-            var id = $(this).data('id');
-            $.ajax({
-                url: "{{ url('kambing') }}/" + id,
-                type: "DELETE",
-                success: function(response) {
-                    table.ajax.reload();
-                    toastr.success(response.success);
-                },
-                error: function(xhr) {
-                    toastr.error('Terjadi kesalahan saat menghapus data');
-                }
-            });
-        }
-    });
-
-    // Show Add Modal
-    $('#addKambingModal').on('show.bs.modal', function() {
-        // Load jenis data
-        $.ajax({
-            url: "{{ route('jenis.getData') }}",
-            type: "GET",
-            success: function(data) {
-                var jenisOptions = '<option value="">Pilih Jenis</option>';
-                data.forEach(function(jenis) {
-                    jenisOptions += '<option value="' + jenis.id + '">' + jenis.nama_jenis + '</option>';
-                });
-                $('#jenis_id').html(jenisOptions);
-            },
-            error: function(xhr) {
-                console.error('Error loading jenis data:', xhr);
-            }
-        });
-
-        // Get next kode kambing
-        $.get("{{ route('kambing.getNextKode') }}", function(data) {
-            $('#kode_kambing').val(data.kode_kambing);
         });
     });
 
